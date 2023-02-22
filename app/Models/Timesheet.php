@@ -13,11 +13,27 @@ class Timesheet extends Model
         'date',
         'difficult',
         'user_id',
-        'schedule'
+        'schedule',
+        'manager_id',
+        'status'
     ];
 
     public function tasks()
     {
-        return $this->hasMany(Line::class);
+        return $this->hasMany(Task::class);
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public static function boot() {
+        parent::boot();
+
+        static::deleting(function($timesheet) { // before delete() method call this
+            $timesheet->tasks()->delete();
+            // do the rest of the cleanup...
+        });
     }
 }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TimesheetController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -32,8 +33,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [TimesheetController::class, 'index'])->name('timesheet');
         Route::get('/{timesheet}', [TimesheetController::class, 'show'])->name('timesheet.show');
         Route::patch('/{timesheet}', [TimesheetController::class, 'update'])->name('timesheet.update');
+        Route::patch('/{timesheet}/approve', [TimesheetController::class, 'updateStatus'])->name('timesheet.approve');
         Route::post('/', [TimesheetController::class, 'store'])->name('timesheet.store');
         Route::delete('/{timesheet}', [TimesheetController::class, 'destroy'])->name('timesheet.destroy');
+    });
+    Route::prefix('/manage/user')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('manage.user');
+        Route::patch('/{user}', [UserController::class, 'update'])->name('manage.updateRole');
+        Route::delete('/{user}', [UserController::class, 'destroy']);
     });
 });
 

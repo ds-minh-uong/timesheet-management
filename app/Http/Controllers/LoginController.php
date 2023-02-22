@@ -20,10 +20,10 @@ class LoginController extends Controller
             return redirect()->intended(RouteServiceProvider::HOME);
         }
 
-        throw ValidationException::withMessages([
-            'email' => trans('auth.failed'),
-        ]);
-//        return redirect()->intended('login');
+//        throw ValidationException::withMessages([
+//            'email' => trans('auth.failed'),
+//        ]);
+        return redirect()->intended('login');
     }
 
     public function logout(Request $request): RedirectResponse

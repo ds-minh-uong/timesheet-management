@@ -3,9 +3,15 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ResetPassword;
+use App\Models\PasswordReset;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class PasswordResetLinkController extends Controller
@@ -29,16 +35,22 @@ class PasswordResetLinkController extends Controller
             'email' => ['required', 'email'],
         ]);
 
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+        if (!User::where('email', $request->email)->first()) {
+            return back()->withErrors([
+                'email' => 'This email has not been registered',
+            ]);
+        }
 
-        return $status == Password::RESET_LINK_SENT
-                    ? back()->with('status', __($status))
-                    : back()->withInput($request->only('email'))
-                            ->withErrors(['email' => __($status)]);
+        $token = Str::random(32);
+        PasswordReset::insert([
+            'email' => $request->email,
+            'token' => $token
+        ]);
+
+//        $resetUrl = url( '/reset-password'. '?token=' . $token);
+        $resetUrl = URL::temporarySignedRoute('password.reset', now()->addMinutes(3), ['user' => 1]);
+        Mail::to($request->only('email'))->send(new ResetPassword($resetUrl . '?token=' . $token));
+
+        return back()->with('message', 'We have e-mailed your password reset link!');
     }
 }
